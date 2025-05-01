@@ -1,9 +1,9 @@
 
-# pyproject.toml (web-chatbot)
+# pyproject.toml (flare-ai-kit-python-client)
 [project]
-name = "flare-ai-kit-web-chatbot"
+name = "flare-ai-kit-python-client"
 version = "0.1.0"
-description = "Flare AI Kit example web-based chatbot"
+description = "Flare AI Kit example Python client"
 readme = "README.md"
 authors = [
   {name = "Dinesh Pinto", email = "annual.fallout_0z@icloud.com"},
@@ -34,7 +34,6 @@ dev = [
 ]
 
 [project.scripts]
-#start-backend = "flare_ai_kit_web_chatbot.backend.main:start"
 start-backend = "backend.main:start"
 
 [build-system]
@@ -45,7 +44,6 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-#packages = ["backend/flare_ai_kit_web_chatbot"]
 packages = ["backend"]
 
 [tool.ruff]

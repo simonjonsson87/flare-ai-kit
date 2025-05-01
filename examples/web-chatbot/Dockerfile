@@ -85,6 +85,7 @@ LABEL "tee.launch_policy.log_redirect"="always"
 
 EXPOSE 80
 EXPOSE 443
+EXPOSE 8080
 
 # Start supervisor (which will start both nginx and the backend)
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
