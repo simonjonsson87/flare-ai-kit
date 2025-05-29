@@ -1,9 +1,15 @@
+import sys
 import asyncio
 import socket
 import h11
 import tlslite  # Your modified tlslite library
 from tlslite.api import TLSConnection, HandshakeSettings
 from tlslite.extensions import SupportedGroupsExtension
+
+ip = sys.argv[1] if len(sys.argv) > 1 else None
+ 
+
+
 
 async def send_request(host="127.0.0.1", port=4433, method="GET", path="/", body=None, attestation_token=None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -97,13 +103,27 @@ async def main():
     except FileNotFoundError:
         print("No client attestation token provided")
 
-    tasks = [
-        send_request(method="GET", path="/", attestation_token=attestation_token),
-        send_request(method="GET", path="/items", attestation_token=attestation_token),
-        send_request(method="POST", path="/data", body="Test data", attestation_token=attestation_token),
-        send_request(method="GET", path="/unknown", attestation_token=attestation_token)
-    ]
+    if ip:
+        tasks = [
+            send_request(host=ip, method="GET", path="/", attestation_token=attestation_token),
+            send_request(host=ip, method="GET", path="/items", attestation_token=attestation_token),
+            send_request(host=ip, method="POST", path="/data", body="Test data", attestation_token=attestation_token),
+            send_request(host=ip, method="GET", path="/unknown", attestation_token=attestation_token)
+        ]
+    else:    
+        tasks = [
+            send_request(method="GET", path="/", attestation_token=attestation_token),
+            send_request(method="GET", path="/items", attestation_token=attestation_token),
+            send_request(method="POST", path="/data", body="Test data", attestation_token=attestation_token),
+            send_request(method="GET", path="/unknown", attestation_token=attestation_token)
+        ]
+    
     await asyncio.gather(*tasks)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    try:
+        asyncio.run(main())
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()

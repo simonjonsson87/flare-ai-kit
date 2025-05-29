@@ -1,4 +1,3 @@
-print("ra_tls_main.py - The very beginning")
 import asyncio
 import socket
 import threading
@@ -10,8 +9,12 @@ from tlslite.constants import CertificateType, ExtensionType
 from tlslite.extensions import SupportedGroupsExtension, AttestationTokenExtension, CustomExtensionType
 from tlslite.messages import CertificateEntry
 import pathlib
-
-print("ra_tls_main.py - after libraries")
+from settings import settings
+from flare_ai_kit.tee.attestation import VtpmAttestation
+    
+attestation=VtpmAttestation(simulate=settings.simulate_attestation)
+attestation_token = bytes(attestation.get_token([]), encoding='utf-8')
+print(type(attestation_token))
 
 BASE_DIR = pathlib.Path(__file__).parent
 CERT_PATH = BASE_DIR / "serverCert.pem"
@@ -24,37 +27,34 @@ with open(CERT_PATH, "rb") as f:
     decoded = f.read().decode()
     cert.parse(decoded)
 
-print("---------------------")
 cert_chain = X509CertChain([cert])
 with open(KEY_PATH, "rb") as f:
     key_bytes = f.read()
     decoded = key_bytes.decode()
     private_key = parsePEMKey(decoded, private=True)
 
-print("ra_tls_main.py - After getting the certs")
 
 # Configure handshake settings for TLS 1.3
-settings = HandshakeSettings()
-settings.minVersion = (3, 4)  # TLS 1.3
-settings.maxVersion = (3, 4)  # TLS 1.3
+tls_settings = HandshakeSettings()
+tls_settings.minVersion = (3, 4)  # TLS 1.3
+tls_settings.maxVersion = (3, 4)  # TLS 1.3
 supported_groups = SupportedGroupsExtension()
 supported_groups.create([23, 24])  # secp256r1 (23), secp384r1 (24)
-settings.extensions = [supported_groups]
+tls_settings.extensions = [supported_groups]
 
 # Read attestation token as binary
-try:
-    with open(SIM_TOKEN_PATH, "rb") as f:
-        attestation_token = f.read()
-        print(f"Attestation token size: {len(attestation_token)} bytes")
-except FileNotFoundError:
-    print("Error: sim_token.txt not found")
-    exit(1)
-except Exception as e:
-    print(f"Error reading sim_token.txt: {e}")
-    exit(1)
+#try:
+#    with open(SIM_TOKEN_PATH, "rb") as f:
+#        attestation_token = f.read()
+#        print(f"Attestation token size: {len(attestation_token)} bytes")
+#except FileNotFoundError:
+#    print("Error: sim_token.txt not found")
+#    exit(1)
+#except Exception as e:
+#    print(f"Error reading sim_token.txt: {e}")
+#    exit(1)
 print(f"Attestation token loaded: {len(attestation_token) == 2700}")
-
-print("ra_tls_main.py - About to start functions")
+#
 
 # Define handler functions
 def handle_root(request):
@@ -85,12 +85,8 @@ routes = {
     ("POST", "/data"): handle_data
 }
 
-print("ra_tls_main.py - Before ThreadPoolExecutor")
-
 # Thread pool for synchronous TLS operations
 executor = ThreadPoolExecutor(max_workers=10)
-
-print("ra_tls_main.py - Before handle_connection")
 
 async def handle_connection(client_sock, addr):
     print(f"Accepted connection from {addr}")
@@ -99,7 +95,7 @@ async def handle_connection(client_sock, addr):
     try:
         # Perform TLS handshake in a thread
         def do_handshake():
-            tls_conn.handshakeServer(None, cert_chain, private_key, settings=settings, attestation_token=attestation_token)
+            tls_conn.handshakeServer(None, cert_chain, private_key, settings=tls_settings, attestation_token=attestation_token)
         await asyncio.get_event_loop().run_in_executor(executor, do_handshake)
         print("TLS handshake complete!")
 
@@ -187,17 +183,13 @@ async def handle_connection(client_sock, addr):
             pass
         client_sock.close()
 
-print("ra_tls_main.py - before def main()")
-
 async def main():
-    print("Inside main()")
     # Set up TCP socket
     server_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_sock.bind(("0.0.0.0", 4433))
     server_sock.listen(5)
     server_sock.setblocking(False)
-    print("Server listening on port 4433...")
 
     loop = asyncio.get_event_loop()
     while True:
@@ -208,8 +200,5 @@ if __name__ == "__main__":
     asyncio.run(main())
     
 def start():
-    print("Running main now.")
-    #main()
     asyncio.run(main())
-    
-print("ra_tls_main.py - The very end")    
+     

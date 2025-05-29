@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     """
 
     # Flag to enable/disable attestation simulation
-    simulate_attestation: bool = True
+    simulate_attestation: bool = False
     # Restrict backend listener to specific IPs
     cors_origins: list[str] = ["*"]
     # API key for accessing Google's Gemini AI service
