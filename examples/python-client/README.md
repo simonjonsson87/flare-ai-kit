@@ -20,7 +20,7 @@ Copy self-signed certificate from the docker container
 ```zsh
 docker builder prune --all &&
 docker build --no-cache --progress=plain -t flare-ai-kit-python-client -f examples/python-client/Dockerfile . > build.log 2>&1 &&
-docker run --rm -p 8080:8080 -it --env-file .env flare-ai-kit-python-client
+docker run --rm -p 4433:4433 -it --env-file .env flare-ai-kit-python-client
 ```
 
 # Debug
@@ -46,6 +46,11 @@ Add the certificate to your browser
 
 cat Dockerfile pyproject.toml settings.py supervisord.conf | pbcopy
 
+# Generate certifcates
+
+pip install cryptography
+mkdir certs
+python generate_cert.py --ip 34.123.45.67 --output-dir certs
 
 # Create TEE
 ```zsh

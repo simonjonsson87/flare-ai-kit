@@ -16,3 +16,4 @@ wheels/
 
 # Project specific
 build.log
+examples/python-client/certs/server_key.pem"

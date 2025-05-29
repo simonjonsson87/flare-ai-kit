@@ -85,6 +85,9 @@ graph TD
    uv sync --all-extras
    ```
 
+## Use examples
+Please edit tee-config.yaml to reflect what examples should become a docker image.
+
 ## ✅ Development Checks
 
 Run the following checks locally before committing or submitting PRs:
